@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransCarga Estibas — Acceso al sistema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F2A43;
+    --navy-2:#16334F;
+    --amber:#F2A93B;
+    --amber-dark:#C97C1B;
+    --concrete:#EDEAE3;
+    --concrete-2:#E2DED3;
+    --ink:#1B1F23;
+    --steel:#5B6B79;
+    --white:#FFFFFF;
+    --err:#B23A2E;
+    --ok:#3B7A57;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    background:var(--concrete);
+    min-height:100vh;
+    display:flex;
+  }
+  .layout{
+    display:flex;
+    width:100%;
+    min-height:100vh;
+  }
+
+  /* ---------- Panel izquierdo: identidad + vale de estiba ---------- */
+  .panel-marca{
+    flex:1 1 46%;
+    background:var(--navy);
+    color:var(--white);
+    padding:56px 48px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+    min-height:100vh;
+  }
+  .marca-top{position:relative; z-index:2;}
+  .marca-logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:64px;
+  }
+  .logo-mark{
+    width:40px; height:40px;
+    background:var(--amber);
+    border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--navy);
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:22px;
+    flex-shrink:0;
+  }
+  .marca-nombre{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:20px;
+    letter-spacing:0.02em;
+  }
+  .marca-sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:#9FB2C4;
+    letter-spacing:0.04em;
+    margin-top:2px;
+  }
+
+  .marca-titulo{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:clamp(34px, 4vw, 46px);
+    line-height:1.08;
+    max-width:460px;
+    margin-bottom:18px;
+  }
+  .marca-titulo em{
+    font-style:normal;
+    color:var(--amber);
+  }
+  .marca-desc{
+    font-size:15px;
+    line-height:1.6;
+    color:#C7D2DB;
+    max-width:400px;
+  }
+
+  /* Vale de estiba: elemento distintivo del dominio */
+  .vale{
+    position:relative;
+    z-index:2;
+    background:var(--navy-2);
+    border:1px solid #2A4A68;
+    border-radius:10px;
+    padding:22px 24px 20px;
+    max-width:400px;
+    margin-top:40px;
+  }
+  .vale::before, .vale::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:20px; height:20px;
+    background:var(--concrete);
+    border-radius:50%;
+    transform:translateY(-50%);
+  }
+  .vale::before{ left:-10px; }
+  .vale::after{ right:-10px; }
+  .vale-cabecera{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:1px dashed #3C5A76;
+    padding-bottom:12px;
+    margin-bottom:12px;
+  }
+  .vale-cabecera .rotulo{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--amber);
+  }
+  .vale-cabecera .codigo{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:#9FB2C4;
+  }
+  .vale-fila{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    padding:4px 0;
+    color:#DCE4EA;
+  }
+  .vale-fila span:first-child{ color:#8FA3B5; }
+  .vale-fila .estado{
+    color:var(--ok);
+    font-weight:500;
+  }
+  .vale-monto{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px dashed #3C5A76;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  .vale-monto .etq{ font-size:12px; color:#8FA3B5; }
+  .vale-monto .val{
+    font-family:'JetBrains Mono', monospace;
+    font-size:20px;
+    color:var(--white);
+    font-weight:500;
+  }
+
+  .marca-foot{
+    position:relative; z-index:2;
+    font-size:12px;
+    color:#7E93A5;
+    margin-top:40px;
+  }
+
+  /* franja diagonal ambar sutil, referencia a cinta de carga */
+  .franja{
+    position:absolute;
+    right:-60px; bottom:-140px;
+    width:260px; height:420px;
+    background:repeating-linear-gradient(-45deg, rgba(242,169,59,0.07) 0 14px, transparent 14px 28px);
+    z-index:1;
+  }
+
+  /* ---------- Panel derecho: formularios ---------- */
+  .panel-acceso{
+    flex:1 1 54%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 32px;
+  }
+  .tarjeta{
+    width:100%;
+    max-width:400px;
+  }
+  .tabs{
+    display:flex;
+    gap:4px;
+    background:var(--concrete-2);
+    border-radius:8px;
+    padding:4px;
+    margin-bottom:32px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:10px 0;
+    border:none;
+    background:transparent;
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    color:var(--steel);
+    border-radius:6px;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .tab-btn.activo{
+    background:var(--white);
+    color:var(--navy);
+    box-shadow:0 1px 2px rgba(15,42,67,0.12);
+  }
+
+  .form-titulo{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:24px;
+    margin-bottom:6px;
+    color:var(--ink);
+  }
+  .form-sub{
+    font-size:13px;
+    color:var(--steel);
+    margin-bottom:28px;
+    line-height:1.5;
+  }
+
+  .campo{ margin-bottom:18px; }
+  .campo label{
+    display:block;
+    font-size:12px;
+    font-weight:500;
+    color:var(--steel);
+    margin-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  .campo input, .campo select{
+    width:100%;
+    padding:11px 13px;
+    border:1px solid #D3CFC2;
+    border-radius:7px;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    background:var(--white);
+    color:var(--ink);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .campo input:focus, .campo select:focus{
+    outline:none;
+    border-color:var(--navy);
+    box-shadow:0 0 0 3px rgba(15,42,67,0.12);
+  }
+  .campo-doble{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+
+  .btn-primario{
+    width:100%;
+    padding:13px 0;
+    background:var(--navy);
+    color:var(--white);
+    border:none;
+    border-radius:7px;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s, transform .05s;
+    margin-top:6px;
+  }
+  .btn-primario:hover{ background:var(--navy-2); }
+  .btn-primario:active{ transform:scale(0.99); }
+
+  .mensaje{
+    display:none;
+    font-size:13px;
+    padding:10px 14px;
+    border-radius:7px;
+    margin-bottom:18px;
+    line-height:1.5;
+  }
+  .mensaje.error{
+    display:block;
+    background:#FBEAE7;
+    color:var(--err);
+    border:1px solid #F0C7BF;
+  }
+  .mensaje.ok{
+    display:block;
+    background:#E7F1EA;
+    color:var(--ok);
+    border:1px solid #BFDCC9;
+  }
+
+  .pie-form{
+    margin-top:24px;
+    font-size:12.5px;
+    color:var(--steel);
+    text-align:center;
+  }
+  .pie-form button{
+    background:none;
+    border:none;
+    color:var(--navy);
+    font-weight:600;
+    cursor:pointer;
+    font-size:12.5px;
+    text-decoration:underline;
+  }
+
+  .panel-bienvenida{
+    display:none;
+    text-align:center;
+    padding:20px 0;
+  }
+  .panel-bienvenida .check{
+    width:52px; height:52px;
+    border-radius:50%;
+    background:#E7F1EA;
+    color:var(--ok);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 18px;
+    font-size:24px;
+  }
+  .panel-bienvenida h2{
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:24px;
+    margin-bottom:6px;
+  }
+  .panel-bienvenida p{
+    font-size:13.5px;
+    color:var(--steel);
+    margin-bottom:22px;
+    line-height:1.6;
+  }
+  .resumen-sesion{
+    background:var(--concrete-2);
+    border-radius:8px;
+    padding:16px 18px;
+    text-align:left;
+    font-size:13px;
+    margin-bottom:20px;
+  }
+  .resumen-sesion .fila{
+    display:flex;
+    justify-content:space-between;
+    padding:4px 0;
+  }
+  .resumen-sesion .fila span:first-child{ color:var(--steel); }
+  .resumen-sesion .fila span:last-child{ font-weight:500; }
+  .btn-secundario{
+    width:100%;
+    padding:12px 0;
+    background:transparent;
+    color:var(--navy);
+    border:1px solid #D3CFC2;
+    border-radius:7px;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+  }
+
+  @media (max-width: 860px){
+    .layout{ flex-direction:column; }
+    .panel-marca{ min-height:auto; padding:40px 28px; }
+    .marca-titulo{ font-size:30px; }
+    .vale{ margin-top:28px; }
+    .panel-acceso{ padding:36px 24px 56px; }
+  }
+
+  /* =====================================================
+     MÓDULO DE GESTIÓN — panel operativo post-login
+     ===================================================== */
+  .app{ display:none; min-height:100vh; width:100%; }
+  .app.activo{ display:flex; }
+
+  .app-sidebar{
+    width:236px;
+    flex-shrink:0;
+    background:var(--navy);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    padding:26px 16px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .app-logo{ display:flex; align-items:center; gap:12px; padding:0 8px; margin-bottom:36px; }
+  .app-logo .logo-mark{ width:36px; height:36px; font-size:19px; }
+  .app-logo .marca-nombre{ font-size:16px; }
+  .app-logo .marca-sub{ font-size:9.5px; }
+
+  .app-nav{ display:flex; flex-direction:column; gap:2px; flex:1; }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    width:100%;
+    text-align:left;
+    padding:11px 14px;
+    border:none;
+    border-left:3px solid transparent;
+    background:transparent;
+    color:#AFC0CE;
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    border-radius:0 7px 7px 0;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .nav-item:hover{ background:var(--navy-2); color:#fff; }
+  .nav-item.activo{ background:var(--navy-2); color:var(--amber); border-left-color:var(--amber); font-weight:600; }
+  .nav-item .nav-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.7; flex-shrink:0; }
+
+  .app-sidebar-foot{ padding-top:18px; border-top:1px solid #23405C; margin-top:14px; }
+  .nav-item.salir{ color:#E7A99A; }
+  .nav-item.salir:hover{ background:#3A2320; color:#fff; }
+
+  .app-main{ flex:1; min-width:0; background:var(--concrete); min-height:100vh; }
+  .app-topbar{
+    background:var(--white);
+    border-bottom:1px solid #E2DED3;
+    padding:16px 34px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky;
+    top:0;
+    z-index:5;
+  }
+  .app-topbar .titulo-vista{ font-family:'Barlow Condensed', sans-serif; font-size:19px; font-weight:600; color:var(--ink); }
+  .app-topbar .usuario-chip{ display:flex; align-items:center; gap:10px; }
+  .app-topbar .usuario-avatar{
+    width:32px; height:32px; border-radius:50%;
+    background:var(--amber); color:var(--navy);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Barlow Condensed', sans-serif; font-weight:700; font-size:14px;
+  }
+  .app-topbar .usuario-info{ line-height:1.3; }
+  .app-topbar .usuario-nombre{ font-size:13px; font-weight:600; color:var(--ink); }
+  .app-topbar .usuario-rol{ font-size:11px; color:var(--steel); }
+
+  .app-content{ padding:28px 34px 70px; max-width:1180px; }
+  .vista-app{ display:none; }
+  .vista-app.activa{ display:block; }
+
+  .seccion-titulo{ font-family:'Barlow Condensed', sans-serif; font-size:23px; font-weight:600; color:var(--ink); }
+  .seccion-sub{ font-size:13px; color:var(--steel); margin:4px 0 22px; line-height:1.5; }
+  .seccion-cabecera{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+
+  .btn-amber{
+    background:var(--amber); color:var(--navy); border:none;
+    padding:10px 18px; border-radius:7px; font-family:'Inter', sans-serif;
+    font-size:13px; font-weight:600; cursor:pointer; transition:background .15s;
+    white-space:nowrap;
+  }
+  .btn-amber:hover{ background:var(--amber-dark); color:#fff; }
+
+  .cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+  .card{ background:#fff; border:1px solid #E2DED3; border-radius:10px; padding:18px 20px; }
+  .card .card-label{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--steel); font-weight:600; margin-bottom:10px; }
+  .card .card-valor{ font-family:'Barlow Condensed', sans-serif; font-size:29px; font-weight:700; color:var(--navy); }
+  .card .card-nota{ font-size:11.5px; color:var(--steel); margin-top:5px; }
+  .card.acento{ border-color:var(--amber); background:#FFFBF3; }
+
+  .tabla-wrap{ background:#fff; border:1px solid #E2DED3; border-radius:10px; overflow:hidden; margin-bottom:26px; }
+  table.tabla{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.tabla th{ text-align:left; background:var(--concrete-2); padding:11px 16px; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--steel); font-weight:700; white-space:nowrap; }
+  table.tabla td{ padding:11px 16px; border-top:1px solid #EDEAE3; vertical-align:middle; }
+  table.tabla tr:hover td{ background:#FAFAF7; }
+  table.tabla .celda-vacia{ text-align:center; padding:34px 16px; color:var(--steel); font-size:13px; }
+
+  .badge{ display:inline-block; padding:4px 11px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+  .badge-pendiente{ background:#FDF1DE; color:var(--amber-dark); }
+  .badge-proceso{ background:#E4ECF3; color:#2C5C86; }
+  .badge-completado{ background:#E7F1EA; color:var(--ok); }
+  .badge-facturado{ background:#E1E6EE; color:var(--navy); }
+  .badge-anulado{ background:#FBEAE7; color:var(--err); }
+
+  .filtros{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; align-items:center; }
+  .filtros select, .filtros input[type="text"]{
+    padding:8px 12px; border:1px solid #D3CFC2; border-radius:7px;
+    font-size:12.5px; font-family:'Inter', sans-serif; background:#fff; color:var(--ink);
+  }
+  .filtros .buscador{ min-width:180px; }
+  .btn-limpiar{ background:none; border:none; color:var(--steel); font-size:12px; text-decoration:underline; cursor:pointer; }
+
+  .select-estado{
+    padding:5px 8px; border-radius:6px; border:1px solid #D3CFC2;
+    font-size:11.5px; font-family:'Inter', sans-serif; background:#fff; cursor:pointer;
+  }
+  .btn-sm{ padding:6px 11px; font-size:11.5px; border-radius:6px; border:1px solid #D3CFC2; background:#fff; cursor:pointer; margin-left:4px; font-family:'Inter', sans-serif; }
+  .btn-sm:hover{ background:var(--concrete-2); }
+  .btn-sm.peligro{ color:var(--err); border-color:#F0C7BF; }
+  .btn-sm.peligro:hover{ background:#FBEAE7; }
+
+  .grid-form{ background:#fff; border:1px solid #E2DED3; border-radius:10px; padding:26px 28px; max-width:640px; }
+  .grid-form .campo-doble{ grid-template-columns:1fr 1fr; }
+
+  .lista-sedes{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:14px; margin-bottom:26px; }
+  .tarjeta-sede{ background:#fff; border:1px solid #E2DED3; border-radius:10px; padding:16px 18px; position:relative; }
+  .tarjeta-sede .sede-nombre{ font-family:'Barlow Condensed', sans-serif; font-weight:600; font-size:16.5px; color:var(--ink); margin-bottom:4px; }
+  .tarjeta-sede .sede-dato{ font-size:12px; color:var(--steel); line-height:1.5; }
+  .tarjeta-sede .sede-acciones{ margin-top:12px; }
+
+  .chart-mensual{ display:flex; align-items:flex-end; gap:10px; height:170px; padding:14px 8px 0; }
+  .chart-mensual .barra-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .chart-mensual .valor-label{ font-size:9px; color:var(--steel); margin-bottom:4px; font-family:'JetBrains Mono', monospace; white-space:nowrap; }
+  .chart-mensual .barra{ width:100%; background:var(--amber); border-radius:4px 4px 0 0; min-height:3px; transition:height .3s; }
+  .chart-mensual .barra.actual{ background:var(--navy); }
+  .chart-mensual .mes-label{ font-size:10px; color:var(--steel); margin-top:7px; text-transform:uppercase; }
+
+  .desglose-fila{ display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #EDEAE3; font-size:12.5px; }
+  .desglose-fila:last-child{ border-bottom:none; }
+  .desglose-fila .desglose-etq{ width:110px; flex-shrink:0; color:var(--steel); }
+  .desglose-fila .desglose-barra{ flex:1; height:8px; background:var(--concrete-2); border-radius:4px; overflow:hidden; }
+  .desglose-fila .desglose-barra > div{ height:100%; background:var(--amber); border-radius:4px; }
+  .desglose-fila .desglose-val{ width:120px; text-align:right; flex-shrink:0; font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--ink); }
+
+  .paneles-reporte{ display:grid; grid-template-columns:1.3fr 1fr; gap:20px; margin-bottom:26px; }
+  .panel-reporte{ background:#fff; border:1px solid #E2DED3; border-radius:10px; padding:20px 22px; }
+  .panel-reporte h3{ font-family:'Barlow Condensed', sans-serif; font-size:15.5px; font-weight:600; margin-bottom:14px; color:var(--ink); }
+
+  @media (max-width: 980px){
+    .app{ flex-direction:column; }
+    .app-sidebar{ width:100%; height:auto; position:relative; flex-direction:row; align-items:center; overflow-x:auto; padding:14px 16px; }
+    .app-logo{ margin-bottom:0; margin-right:14px; }
+    .app-nav{ flex-direction:row; }
+    .nav-item{ border-left:none; border-bottom:3px solid transparent; white-space:nowrap; border-radius:7px 7px 0 0; }
+    .nav-item.activo{ border-left-color:transparent; border-bottom-color:var(--amber); }
+    .app-sidebar-foot{ border-top:none; margin-top:0; margin-left:8px; padding-top:0; }
+    .app-content{ padding:22px 18px 60px; }
+    .paneles-reporte{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <section class="panel-marca">
+    <div class="franja"></div>
+    <div class="marca-top">
+      <div class="marca-logo">
+        <div class="logo-mark">TC</div>
+        <div>
+          <div class="marca-nombre">TransCarga Estibas</div>
+          <div class="marca-sub">SISTEMA DE GESTIÓN · LIMA 2026</div>
+        </div>
+      </div>
+
+      <h1 class="marca-titulo">Cada servicio, <em>controlado</em>.<br>Cada factura, <em>a tiempo</em>.</h1>
+      <p class="marca-desc">
+        Centraliza el registro de servicios de estiba y automatiza su
+        facturación, reduciendo errores, duplicidad de datos y tiempos de
+        emisión frente al control manual.
+      </p>
+
+      <div class="vale">
+        <div class="vale-cabecera">
+          <span class="rotulo">Vale de servicio</span>
+          <span class="codigo">SVC-0148</span>
+        </div>
+        <div class="vale-fila"><span>Cliente</span><span>Import. del Pacífico SAC</span></div>
+        <div class="vale-fila"><span>Tipo</span><span>Carga y descarga</span></div>
+        <div class="vale-fila"><span>Unidades</span><span>18.5 ton</span></div>
+        <div class="vale-fila"><span>Estado</span><span class="estado">Completado</span></div>
+        <div class="vale-monto">
+          <span class="etq">Monto estimado</span>
+          <span class="val">S/ 1,387.50</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="marca-foot">© 2026 TransCarga Estibas — Módulo interno de operaciones</div>
+  </section>
+
+  <section class="panel-acceso">
+    <div class="tarjeta">
+
+      <div id="vistaFormularios">
+        <div class="tabs">
+          <button class="tab-btn activo" id="tabLogin" onclick="mostrarTab('login')">Iniciar sesión</button>
+          <button class="tab-btn" id="tabRegistro" onclick="mostrarTab('registro')">Crear cuenta</button>
+        </div>
+
+        <!-- LOGIN -->
+        <form id="formLogin" onsubmit="return manejarLogin(event)">
+          <h2 class="form-titulo">Bienvenido de vuelta</h2>
+          <p class="form-sub">Ingresa con tu usuario para gestionar servicios y facturación.</p>
+          <div id="msgLogin" class="mensaje"></div>
+
+          <div class="campo">
+            <label for="loginUsuario">Usuario</label>
+            <input type="text" id="loginUsuario" autocomplete="username" placeholder="ej. jrodriguez">
+          </div>
+          <div class="campo">
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••">
+          </div>
+
+          <button type="submit" class="btn-primario">Ingresar al sistema</button>
+          <p class="pie-form">¿Aún no tienes cuenta? <button type="button" onclick="mostrarTab('registro')">Regístrate aquí</button></p>
+        </form>
+
+        <!-- REGISTRO -->
+        <form id="formRegistro" style="display:none" onsubmit="return manejarRegistro(event)">
+          <h2 class="form-titulo">Crear cuenta nueva</h2>
+          <p class="form-sub">Registra tu acceso para operar el módulo de estibas y facturación.</p>
+          <div id="msgRegistro" class="mensaje"></div>
+
+          <div class="campo">
+            <label for="regNombre">Nombre completo</label>
+            <input type="text" id="regNombre" placeholder="Nombres y apellidos">
+          </div>
+          <div class="campo-doble">
+            <div class="campo">
+              <label for="regUsuario">Usuario</label>
+              <input type="text" id="regUsuario" placeholder="mín. 4 caracteres">
+            </div>
+            <div class="campo">
+              <label for="regRol">Rol</label>
+              <select id="regRol">
+                <option value="Administrador">Administrador</option>
+                <option value="Operador de patio">Operador de patio</option>
+                <option value="Facturador">Facturador</option>
+              </select>
+            </div>
+          </div>
+          <div class="campo-doble">
+            <div class="campo">
+              <label for="regPassword">Contraseña</label>
+              <input type="password" id="regPassword" placeholder="mín. 6 caracteres">
+            </div>
+            <div class="campo">
+              <label for="regPassword2">Confirmar</label>
+              <input type="password" id="regPassword2" placeholder="repetir contraseña">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primario">Registrar cuenta</button>
+          <p class="pie-form">¿Ya tienes cuenta? <button type="button" onclick="mostrarTab('login')">Inicia sesión</button></p>
+        </form>
+      </div>
+
+      <!-- VISTA POST-LOGIN (breve, antes de entrar al panel) -->
+      <div class="panel-bienvenida" id="vistaBienvenida">
+        <div class="check">✓</div>
+        <h2>Sesión iniciada</h2>
+        <p>Has ingresado correctamente al sistema de gestión de servicios de estiba.</p>
+        <div class="resumen-sesion">
+          <div class="fila"><span>Usuario</span><span id="resUsuario">—</span></div>
+          <div class="fila"><span>Rol</span><span id="resRol">—</span></div>
+          <div class="fila"><span>Ingreso</span><span id="resFecha">—</span></div>
+        </div>
+        <button class="btn-primario" onclick="irAlPanel()">Ir al panel de servicios</button>
+        <button class="btn-secundario" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<!-- =====================================================
+     PANEL DE GESTIÓN — servicios, programación, sedes, reportes
+     ===================================================== -->
+<div class="app" id="app">
+
+  <aside class="app-sidebar">
+    <div class="app-logo">
+      <div class="logo-mark">TC</div>
+      <div>
+        <div class="marca-nombre">TransCarga Estibas</div>
+        <div class="marca-sub">PANEL DE OPERACIONES</div>
+      </div>
+    </div>
+
+    <nav class="app-nav">
+      <button class="nav-item" id="navResumen" onclick="cambiarVista('resumen')"><span class="nav-dot"></span>Resumen</button>
+      <button class="nav-item" id="navServicios" onclick="cambiarVista('servicios')"><span class="nav-dot"></span>Servicios</button>
+      <button class="nav-item" id="navProgramar" onclick="cambiarVista('programar')"><span class="nav-dot"></span>Programar servicio</button>
+      <button class="nav-item" id="navSedes" onclick="cambiarVista('sedes')"><span class="nav-dot"></span>Sedes</button>
+      <button class="nav-item" id="navReportes" onclick="cambiarVista('reportes')"><span class="nav-dot"></span>Reportes</button>
+    </nav>
+
+    <div class="app-sidebar-foot">
+      <button class="nav-item salir" onclick="cerrarSesion()"><span class="nav-dot"></span>Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-topbar">
+      <div class="titulo-vista" id="tituloVista">Resumen</div>
+      <div class="usuario-chip">
+        <div class="usuario-avatar" id="appAvatar">—</div>
+        <div class="usuario-info">
+          <div class="usuario-nombre" id="appNombre">—</div>
+          <div class="usuario-rol" id="appRol">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-content">
+
+      <!-- ===================== RESUMEN ===================== -->
+      <section class="vista-app" id="vistaResumen">
+        <p class="seccion-sub">Vista general de la operación: servicios pendientes, programados y facturación del mes en curso.</p>
+
+        <div class="cards" id="cardsResumen"></div>
+
+        <div class="seccion-cabecera">
+          <div>
+            <div class="seccion-titulo" style="font-size:17px;">Próximos servicios pendientes</div>
+          </div>
+          <button class="btn-amber" onclick="cambiarVista('programar')">+ Programar servicio</button>
+        </div>
+        <div class="tabla-wrap">
+          <table class="tabla">
+            <thead><tr><th>Código</th><th>Cliente</th><th>Sede</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+            <tbody id="tablaResumenPendientes"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===================== SERVICIOS (listado) ===================== -->
+      <section class="vista-app" id="vistaServicios">
+        <p class="seccion-sub">Registro completo de servicios: programación, sede, montos y estado de cada uno.</p>
+
+        <div class="filtros">
+          <select id="filtroEstado" onchange="renderServicios()">
+            <option value="">Todos los estados</option>
+          </select>
+          <select id="filtroSede" onchange="renderServicios()">
+            <option value="">Todas las sedes</option>
+          </select>
+          <select id="filtroAnio" onchange="renderServicios()"></select>
+          <select id="filtroMes" onchange="renderServicios()">
+            <option value="">Todos los meses</option>
+          </select>
+          <input type="text" id="filtroBusqueda" class="buscador" placeholder="Buscar cliente…" oninput="renderServicios()">
+          <button class="btn-limpiar" onclick="limpiarFiltros()">Limpiar filtros</button>
+        </div>
+
+        <div class="tabla-wrap">
+          <table class="tabla">
+            <thead><tr>
+              <th>Código</th><th>Cliente</th><th>Sede</th><th>Tipo</th><th>Fecha</th>
+              <th>Unidades</th><th>Monto</th><th>Estado</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="tablaServicios"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===================== PROGRAMAR SERVICIO ===================== -->
+      <section class="vista-app" id="vistaProgramar">
+        <p class="seccion-sub" id="subProgramar">Registra un nuevo servicio: cliente, sede, fecha programada, unidades y monto estimado.</p>
+
+        <div id="msgProgramar" class="mensaje"></div>
+
+        <form class="grid-form" id="formServicio" onsubmit="return guardarServicio(event)">
+          <input type="hidden" id="svcId">
+
+          <div class="campo">
+            <label for="svcCliente">Cliente</label>
+            <input type="text" id="svcCliente" placeholder="Razón social del cliente">
+          </div>
+
+          <div class="campo-doble">
+            <div class="campo">
+              <label for="svcSede">Sede</label>
+              <select id="svcSede"></select>
+            </div>
+            <div class="campo">
+              <label for="svcTipo">Tipo de servicio</label>
+              <select id="svcTipo">
+                <option>Carga y descarga</option>
+                <option>Estiba portuaria</option>
+                <option>Consolidado de carga</option>
+                <option>Transporte terrestre</option>
+                <option>Almacenaje temporal</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="campo-doble">
+            <div class="campo">
+              <label for="svcFecha">Fecha programada</label>
+              <input type="date" id="svcFecha">
+            </div>
+            <div class="campo">
+              <label for="svcHora">Hora</label>
+              <input type="time" id="svcHora">
+            </div>
+          </div>
+
+          <div class="campo-doble">
+            <div class="campo">
+              <label for="svcUnidades">Unidades (ton)</label>
+              <input type="number" id="svcUnidades" min="0" step="0.1" placeholder="ej. 12.5">
+            </div>
+            <div class="campo">
+              <label for="svcMonto">Monto estimado (S/)</label>
+              <input type="number" id="svcMonto" min="0" step="0.01" placeholder="ej. 850.00">
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="svcEstado">Estado del servicio</label>
+            <select id="svcEstado"></select>
+          </div>
+
+          <div class="campo">
+            <label for="svcNotas">Notas (opcional)</label>
+            <input type="text" id="svcNotas" placeholder="Referencias adicionales">
+          </div>
+
+          <button type="submit" class="btn-primario" id="btnGuardarServicio">Guardar servicio</button>
+          <button type="button" class="btn-secundario" style="margin-top:10px;" onclick="cancelarProgramar()">Cancelar</button>
+        </form>
+      </section>
+
+      <!-- ===================== SEDES ===================== -->
+      <section class="vista-app" id="vistaSedes">
+        <p class="seccion-sub">Sedes o terminales desde donde se prestan los servicios de estiba y transporte.</p>
+
+        <div id="msgSede" class="mensaje"></div>
+        <form class="grid-form" id="formSede" onsubmit="return guardarSede(event)" style="margin-bottom:26px;">
+          <div class="campo">
+            <label for="sedeNombre">Nombre de la sede</label>
+            <input type="text" id="sedeNombre" placeholder="ej. Sede Callao">
+          </div>
+          <div class="campo-doble">
+            <div class="campo">
+              <label for="sedeCiudad">Ciudad</label>
+              <input type="text" id="sedeCiudad" placeholder="ej. Callao">
+            </div>
+            <div class="campo">
+              <label for="sedeDireccion">Dirección</label>
+              <input type="text" id="sedeDireccion" placeholder="Dirección de la sede">
+            </div>
+          </div>
+          <button type="submit" class="btn-primario">Agregar sede</button>
+        </form>
+
+        <div class="lista-sedes" id="listaSedes"></div>
+      </section>
+
+      <!-- ===================== REPORTES ===================== -->
+      <section class="vista-app" id="vistaReportes">
+        <p class="seccion-sub">Informe de servicios por mes y año: totales, montos, estado y distribución por sede.</p>
+
+        <div class="filtros">
+          <select id="repAnio" onchange="renderReportes()"></select>
+          <select id="repMes" onchange="renderReportes()">
+            <option value="">Todo el año</option>
+          </select>
+        </div>
+
+        <div class="cards" id="cardsReporte"></div>
+
+        <div class="paneles-reporte">
+          <div class="panel-reporte">
+            <h3 id="tituloChart">Monto programado por mes</h3>
+            <div class="chart-mensual" id="chartMensual"></div>
+          </div>
+          <div class="panel-reporte">
+            <h3>Distribución por estado</h3>
+            <div id="desgloseEstado"></div>
+          </div>
+        </div>
+
+        <div class="panel-reporte" style="margin-bottom:26px;">
+          <h3>Distribución por sede</h3>
+          <div id="desgloseSede"></div>
+        </div>
+
+        <div class="seccion-cabecera">
+          <div class="seccion-titulo" style="font-size:17px;">Detalle del periodo</div>
+        </div>
+        <div class="tabla-wrap">
+          <table class="tabla">
+            <thead><tr><th>Código</th><th>Cliente</th><th>Sede</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+            <tbody id="tablaReporteDetalle"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+/*
+  MVC en el cliente (prototipo de interfaz):
+  - Model: EstibaAuthModel (localStorage simula la tabla de usuarios)
+  - View: funciones mostrarMensaje/mostrarTab/renderBienvenida
+  - Controller: manejarLogin / manejarRegistro
+  Esta pantalla es la interfaz visual de acceso; el sistema completo de
+  gestión (clientes, servicios, facturación) se implementa en el
+  aplicativo de escritorio Java (patrón MVC + Singleton/Factory/Builder/
+  Observer) incluido en el proyecto de NetBeans.
+*/
+
+const EstibaAuthModel = {
+  CLAVE: 'estibas_usuarios',
+
+  obtenerUsuarios(){
+    try { return JSON.parse(localStorage.getItem(this.CLAVE)) || []; }
+    catch(e){ return []; }
+  },
+  guardarUsuarios(lista){
+    localStorage.setItem(this.CLAVE, JSON.stringify(lista));
+  },
+  existeUsuario(usuario){
+    return this.obtenerUsuarios().some(u => u.usuario.toLowerCase() === usuario.toLowerCase());
+  },
+  registrar(nombre, usuario, password, rol){
+    const lista = this.obtenerUsuarios();
+    lista.push({ nombre, usuario, password: hashSimple(password), rol });
+    this.guardarUsuarios(lista);
+  },
+  validar(usuario, password){
+    const u = this.obtenerUsuarios().find(x => x.usuario.toLowerCase() === (usuario||'').toLowerCase());
+    if (!u) return null;
+    return u.password === hashSimple(password) ? u : null;
+  }
+};
+
+function hashSimple(texto){
+  let h = 0;
+  for (let i = 0; i < texto.length; i++){
+    h = (Math.imul(31, h) + texto.charCodeAt(i)) | 0;
+  }
+  return 'h' + h.toString(16);
+}
+
+function mostrarTab(nombre){
+  const esLogin = nombre === 'login';
+  document.getElementById('tabLogin').classList.toggle('activo', esLogin);
+  document.getElementById('tabRegistro').classList.toggle('activo', !esLogin);
+  document.getElementById('formLogin').style.display = esLogin ? 'block' : 'none';
+  document.getElementById('formRegistro').style.display = esLogin ? 'none' : 'block';
+  document.getElementById('msgLogin').style.display = 'none';
+  document.getElementById('msgRegistro').style.display = 'none';
+}
+
+function mostrarMensaje(idContenedor, texto, tipo){
+  const el = document.getElementById(idContenedor);
+  el.textContent = texto;
+  el.className = 'mensaje ' + tipo;
+}
+
+function manejarRegistro(evento){
+  evento.preventDefault();
+  const nombre = document.getElementById('regNombre').value.trim();
+  const usuario = document.getElementById('regUsuario').value.trim();
+  const rol = document.getElementById('regRol').value;
+  const p1 = document.getElementById('regPassword').value;
+  const p2 = document.getElementById('regPassword2').value;
+
+  if (!nombre){ mostrarMensaje('msgRegistro', 'El nombre completo es obligatorio.', 'error'); return false; }
+  if (usuario.length < 4){ mostrarMensaje('msgRegistro', 'El usuario debe tener al menos 4 caracteres.', 'error'); return false; }
+  if (p1.length < 6){ mostrarMensaje('msgRegistro', 'La contraseña debe tener al menos 6 caracteres.', 'error'); return false; }
+  if (p1 !== p2){ mostrarMensaje('msgRegistro', 'Las contraseñas no coinciden.', 'error'); return false; }
+  if (EstibaAuthModel.existeUsuario(usuario)){
+    mostrarMensaje('msgRegistro', 'Ya existe una cuenta con ese usuario (se evita la duplicidad de datos).', 'error');
+    return false;
+  }
+
+  EstibaAuthModel.registrar(nombre, usuario, p1, rol);
+  mostrarMensaje('msgRegistro', 'Cuenta creada correctamente. Ahora puedes iniciar sesión.', 'ok');
+  document.getElementById('formRegistro').reset();
+  setTimeout(() => mostrarTab('login'), 900);
+  return false;
+}
+
+let usuarioActual = null;
+
+function manejarLogin(evento){
+  evento.preventDefault();
+  const usuario = document.getElementById('loginUsuario').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  const u = EstibaAuthModel.validar(usuario, password);
+  if (!u){
+    mostrarMensaje('msgLogin', 'Usuario o contraseña incorrectos.', 'error');
+    return false;
+  }
+
+  usuarioActual = u;
+  document.getElementById('vistaFormularios').style.display = 'none';
+  document.getElementById('vistaBienvenida').style.display = 'block';
+  document.getElementById('resUsuario').textContent = u.usuario;
+  document.getElementById('resRol').textContent = u.rol;
+  document.getElementById('resFecha').textContent = new Date().toLocaleString('es-PE');
+  return false;
+}
+
+function cerrarSesion(){
+  usuarioActual = null;
+  document.getElementById('app').classList.remove('activo');
+  document.querySelector('.layout').style.display = 'flex';
+  document.getElementById('vistaBienvenida').style.display = 'none';
+  document.getElementById('vistaFormularios').style.display = 'block';
+  document.getElementById('formLogin').reset();
+  mostrarTab('login');
+}
+
+/* =====================================================
+   MODELOS DE DATOS — sedes y servicios
+   (mismo patrón que EstibaAuthModel: localStorage como
+   almacén; el sistema completo corre en el aplicativo Java)
+   ===================================================== */
+const ESTADOS = ['Pendiente', 'En proceso', 'Completado', 'Facturado', 'Anulado'];
+const CLASE_ESTADO = {
+  'Pendiente':'badge-pendiente', 'En proceso':'badge-proceso', 'Completado':'badge-completado',
+  'Facturado':'badge-facturado', 'Anulado':'badge-anulado'
+};
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function genId(prefijo){
+  return prefijo + '-' + Date.now().toString(36) + Math.floor(Math.random()*999);
+}
+
+const SedesModel = {
+  CLAVE: 'estibas_sedes',
+  obtener(){ try{ return JSON.parse(localStorage.getItem(this.CLAVE)) || []; } catch(e){ return []; } },
+  guardar(lista){ localStorage.setItem(this.CLAVE, JSON.stringify(lista)); },
+  crear(nombre, ciudad, direccion){
+    const lista = this.obtener();
+    lista.push({ id: genId('sede'), nombre, ciudad, direccion });
+    this.guardar(lista);
+  },
+  eliminar(id){
+    this.guardar(this.obtener().filter(s => s.id !== id));
+  },
+  porId(id){ return this.obtener().find(s => s.id === id); }
+};
+
+const ServiciosModel = {
+  CLAVE: 'estibas_servicios',
+  obtener(){ try{ return JSON.parse(localStorage.getItem(this.CLAVE)) || []; } catch(e){ return []; } },
+  guardar(lista){ localStorage.setItem(this.CLAVE, JSON.stringify(lista)); },
+  siguienteCodigo(){
+    const n = this.obtener().length + 1;
+    return 'SVC-' + String(n).padStart(4, '0');
+  },
+  crear(datos){
+    const lista = this.obtener();
+    const registro = Object.assign({
+      id: genId('svc'),
+      codigo: this.siguienteCodigo(),
+      registradoPor: usuarioActual ? usuarioActual.usuario : '—',
+      fechaRegistro: new Date().toISOString()
+    }, datos);
+    lista.push(registro);
+    this.guardar(lista);
+    return registro;
+  },
+  actualizar(id, cambios){
+    const lista = this.obtener().map(s => s.id === id ? Object.assign({}, s, cambios) : s);
+    this.guardar(lista);
+  },
+  eliminar(id){
+    this.guardar(this.obtener().filter(s => s.id !== id));
+  },
+  porId(id){ return this.obtener().find(s => s.id === id); }
+};
+
+/* ---------- Datos de ejemplo (solo si no hay nada guardado) ---------- */
+function inicializarDatosDemo(){
+  if (SedesModel.obtener().length === 0){
+    SedesModel.crear('Sede Callao', 'Callao', 'Av. Néstor Gambetta 500');
+    SedesModel.crear('Sede Paita', 'Paita', 'Terminal Portuario de Paita');
+    SedesModel.crear('Sede Matarani', 'Matarani', 'Zona Industrial, Matarani');
+  }
+  if (ServiciosModel.obtener().length === 0){
+    const sedes = SedesModel.obtener();
+    const clientes = ['Import. del Pacífico SAC', 'Naviera Andina SA', 'Grupo Logístico Sur',
+      'Agroexport del Norte', 'Comercial Reyna EIRL', 'Transportes Litoral SAC'];
+    const tipos = ['Carga y descarga', 'Estiba portuaria', 'Consolidado de carga', 'Transporte terrestre', 'Almacenaje temporal'];
+    const plantilla = [
+      { offset:-58, estado:'Facturado' }, { offset:-50, estado:'Completado' },
+      { offset:-41, estado:'Facturado' }, { offset:-33, estado:'Completado' },
+      { offset:-24, estado:'Completado' }, { offset:-16, estado:'Anulado' },
+      { offset:-10, estado:'Facturado' }, { offset:-5, estado:'Completado' },
+      { offset:-2, estado:'En proceso' }, { offset:1, estado:'Pendiente' },
+      { offset:4, estado:'Pendiente' }, { offset:9, estado:'Pendiente' }
+    ];
+    plantilla.forEach((p, i) => {
+      const fecha = new Date();
+      fecha.setDate(fecha.getDate() + p.offset);
+      ServiciosModel.crear({
+        cliente: clientes[i % clientes.length],
+        sedeId: sedes[i % sedes.length].id,
+        tipo: tipos[i % tipos.length],
+        fecha: fecha.toISOString().slice(0,10),
+        hora: '09:00',
+        unidades: Math.round((6 + (i * 3.7) % 24) * 10) / 10,
+        monto: Math.round((450 + (i * 217) % 1900) * 100) / 100,
+        estado: p.estado,
+        notas: '',
+        registradoPor: 'demo',
+        fechaRegistro: new Date().toISOString()
+      });
+    });
+  }
+}
+
+/* ---------- Utilidades de formato ---------- */
+function formatMoneda(n){
+  return 'S/ ' + Number(n||0).toLocaleString('es-PE', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function formatFecha(iso){
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'});
+}
+function nombreSede(sedeId){
+  const s = SedesModel.porId(sedeId);
+  return s ? s.nombre : '—';
+}
+function badgeEstado(estado){
+  return '<span class="badge ' + (CLASE_ESTADO[estado]||'') + '">' + estado + '</span>';
+}
+function selectEstadoInline(servicio){
+  let html = '<select class="select-estado" onchange="cambiarEstadoServicio(\'' + servicio.id + '\', this.value)">';
+  ESTADOS.forEach(e => {
+    html += '<option value="' + e + '"' + (e === servicio.estado ? ' selected' : '') + '>' + e + '</option>';
+  });
+  html += '</select>';
+  return html;
+}
+function aniosDisponibles(){
+  const anios = new Set(ServiciosModel.obtener().map(s => s.fecha.slice(0,4)));
+  anios.add(String(new Date().getFullYear()));
+  return Array.from(anios).sort().reverse();
+}
+
+/* =====================================================
+   NAVEGACIÓN DEL PANEL
+   ===================================================== */
+function irAlPanel(){
+  inicializarDatosDemo();
+  document.querySelector('.layout').style.display = 'none';
+  document.getElementById('app').classList.add('activo');
+
+  document.getElementById('appAvatar').textContent = usuarioActual.usuario.slice(0,2).toUpperCase();
+  document.getElementById('appNombre').textContent = usuarioActual.nombre || usuarioActual.usuario;
+  document.getElementById('appRol').textContent = usuarioActual.rol;
+
+  poblarSelectsEstaticos();
+  cambiarVista('resumen');
+}
+
+const TITULOS_VISTA = {
+  resumen:'Resumen', servicios:'Servicios', programar:'Programar servicio',
+  sedes:'Sedes', reportes:'Reportes'
+};
+
+function cambiarVista(nombre){
+  document.querySelectorAll('.nav-item[id^="nav"]').forEach(b => b.classList.remove('activo'));
+  const btn = document.getElementById('nav' + nombre.charAt(0).toUpperCase() + nombre.slice(1));
+  if (btn) btn.classList.add('activo');
+
+  document.querySelectorAll('.vista-app').forEach(v => v.classList.remove('activa'));
+  document.getElementById('vista' + nombre.charAt(0).toUpperCase() + nombre.slice(1)).classList.add('activa');
+  document.getElementById('tituloVista').textContent = TITULOS_VISTA[nombre] || '';
+
+  if (nombre === 'resumen') renderResumen();
+  if (nombre === 'servicios') renderServicios();
+  if (nombre === 'programar' && !document.getElementById('svcId').value) prepararFormularioNuevo();
+  if (nombre === 'sedes') renderSedes();
+  if (nombre === 'reportes') renderReportes();
+}
+
+function poblarSelectsEstaticos(){
+  // filtro de estado (listado)
+  const fEstado = document.getElementById('filtroEstado');
+  ESTADOS.forEach(e => fEstado.insertAdjacentHTML('beforeend', '<option value="'+e+'">'+e+'</option>'));
+
+  // filtro de mes (listado y reportes)
+  const fMes = document.getElementById('filtroMes');
+  const repMes = document.getElementById('repMes');
+  MESES.forEach((m, i) => {
+    const val = String(i+1).padStart(2,'0');
+    fMes.insertAdjacentHTML('beforeend', '<option value="'+val+'">'+m+'</option>');
+    repMes.insertAdjacentHTML('beforeend', '<option value="'+val+'">'+m+'</option>');
+  });
+
+  // años
+  const anios = aniosDisponibles();
+  const fAnio = document.getElementById('filtroAnio');
+  const rAnio = document.getElementById('repAnio');
+  fAnio.insertAdjacentHTML('beforeend', '<option value="">Todos los años</option>');
+  anios.forEach(a => {
+    fAnio.insertAdjacentHTML('beforeend', '<option value="'+a+'">'+a+'</option>');
+    rAnio.insertAdjacentHTML('beforeend', '<option value="'+a+'">'+a+'</option>');
+  });
+
+  // estado en formulario de programación
+  const svcEstado = document.getElementById('svcEstado');
+  ESTADOS.forEach(e => svcEstado.insertAdjacentHTML('beforeend', '<option value="'+e+'">'+e+'</option>'));
+
+  // sede en formulario de programación y en filtro
+  refrescarSelectsSedes();
+}
+
+function refrescarSelectsSedes(){
+  const sedes = SedesModel.obtener();
+  const svcSede = document.getElementById('svcSede');
+  const filtroSede = document.getElementById('filtroSede');
+  const valorPrevioForm = svcSede.value;
+  const valorPrevioFiltro = filtroSede.value;
+
+  svcSede.innerHTML = sedes.map(s => '<option value="'+s.id+'">'+s.nombre+'</option>').join('');
+  filtroSede.innerHTML = '<option value="">Todas las sedes</option>' +
+    sedes.map(s => '<option value="'+s.id+'">'+s.nombre+'</option>').join('');
+
+  if (sedes.some(s => s.id === valorPrevioForm)) svcSede.value = valorPrevioForm;
+  if (sedes.some(s => s.id === valorPrevioFiltro)) filtroSede.value = valorPrevioFiltro;
+}
+
+/* =====================================================
+   VISTA: RESUMEN
+   ===================================================== */
+function renderResumen(){
+  const hoy = new Date();
+  const anioActual = hoy.getFullYear();
+  const mesActual = hoy.getMonth();
+  const servicios = ServiciosModel.obtener();
+
+  const delMes = servicios.filter(s => {
+    const f = new Date(s.fecha + 'T00:00:00');
+    return f.getFullYear() === anioActual && f.getMonth() === mesActual;
+  });
+
+  const pendientes = servicios.filter(s => s.estado === 'Pendiente').length;
+  const montoMes = delMes.reduce((acc, s) => acc + Number(s.monto||0), 0);
+  const completadosMes = delMes.filter(s => s.estado === 'Completado' || s.estado === 'Facturado').length;
+
+  const cards = [
+    { label:'Servicios pendientes', valor: pendientes, nota:'Por atender en total', acento:pendientes>0 },
+    { label:'Programados este mes', valor: delMes.length, nota: hoy.toLocaleDateString('es-PE',{month:'long',year:'numeric'}) },
+    { label:'Monto del mes', valor: formatMoneda(montoMes), nota:'Suma de servicios del mes' },
+    { label:'Completados este mes', valor: completadosMes, nota:'Completados o facturados' }
+  ];
+  document.getElementById('cardsResumen').innerHTML = cards.map(c =>
+    '<div class="card'+(c.acento?' acento':'')+'"><div class="card-label">'+c.label+'</div><div class="card-valor">'+c.valor+'</div><div class="card-nota">'+c.nota+'</div></div>'
+  ).join('');
+
+  const proximos = servicios.filter(s => s.estado === 'Pendiente' || s.estado === 'En proceso')
+    .sort((a,b) => a.fecha.localeCompare(b.fecha)).slice(0,6);
+
+  document.getElementById('tablaResumenPendientes').innerHTML = proximos.length ? proximos.map(s =>
+    '<tr><td>'+s.codigo+'</td><td>'+s.cliente+'</td><td>'+nombreSede(s.sedeId)+'</td><td>'+formatFecha(s.fecha)+'</td><td>'+formatMoneda(s.monto)+'</td><td>'+badgeEstado(s.estado)+'</td></tr>'
+  ).join('') : '<tr><td colspan="6" class="celda-vacia">No hay servicios pendientes o en proceso.</td></tr>';
+}
+
+/* =====================================================
+   VISTA: SERVICIOS (listado + filtros)
+   ===================================================== */
+function limpiarFiltros(){
+  document.getElementById('filtroEstado').value = '';
+  document.getElementById('filtroSede').value = '';
+  document.getElementById('filtroAnio').value = '';
+  document.getElementById('filtroMes').value = '';
+  document.getElementById('filtroBusqueda').value = '';
+  renderServicios();
+}
+
+function renderServicios(){
+  const estado = document.getElementById('filtroEstado').value;
+  const sede = document.getElementById('filtroSede').value;
+  const anio = document.getElementById('filtroAnio').value;
+  const mes = document.getElementById('filtroMes').value;
+  const busqueda = document.getElementById('filtroBusqueda').value.trim().toLowerCase();
+
+  let lista = ServiciosModel.obtener();
+  if (estado) lista = lista.filter(s => s.estado === estado);
+  if (sede) lista = lista.filter(s => s.sedeId === sede);
+  if (anio) lista = lista.filter(s => s.fecha.slice(0,4) === anio);
+  if (mes) lista = lista.filter(s => s.fecha.slice(5,7) === mes);
+  if (busqueda) lista = lista.filter(s => s.cliente.toLowerCase().includes(busqueda));
+
+  lista.sort((a,b) => b.fecha.localeCompare(a.fecha));
+
+  document.getElementById('tablaServicios').innerHTML = lista.length ? lista.map(s =>
+    '<tr>' +
+      '<td>'+s.codigo+'</td>' +
+      '<td>'+s.cliente+'</td>' +
+      '<td>'+nombreSede(s.sedeId)+'</td>' +
+      '<td>'+s.tipo+'</td>' +
+      '<td>'+formatFecha(s.fecha)+'</td>' +
+      '<td>'+Number(s.unidades||0).toLocaleString('es-PE')+' ton</td>' +
+      '<td>'+formatMoneda(s.monto)+'</td>' +
+      '<td>'+selectEstadoInline(s)+'</td>' +
+      '<td><button class="btn-sm" onclick="editarServicio(\''+s.id+'\')">Editar</button><button class="btn-sm peligro" onclick="eliminarServicio(\''+s.id+'\')">Eliminar</button></td>' +
+    '</tr>'
+  ).join('') : '<tr><td colspan="9" class="celda-vacia">No se encontraron servicios con estos filtros.</td></tr>';
+}
+
+function cambiarEstadoServicio(id, nuevoEstado){
+  ServiciosModel.actualizar(id, { estado: nuevoEstado });
+  renderServicios();
+}
+
+function eliminarServicio(id){
+  if (!confirm('¿Eliminar este servicio del registro? Esta acción no se puede deshacer.')) return;
+  ServiciosModel.eliminar(id);
+  renderServicios();
+}
+
+/* =====================================================
+   VISTA: PROGRAMAR SERVICIO (crear / editar)
+   ===================================================== */
+function prepararFormularioNuevo(){
+  document.getElementById('formServicio').reset();
+  document.getElementById('svcId').value = '';
+  document.getElementById('svcEstado').value = 'Pendiente';
+  document.getElementById('subProgramar').textContent = 'Registra un nuevo servicio: cliente, sede, fecha programada, unidades y monto estimado.';
+  document.getElementById('btnGuardarServicio').textContent = 'Guardar servicio';
+  document.getElementById('msgProgramar').style.display = 'none';
+  refrescarSelectsSedes();
+}
+
+function editarServicio(id){
+  const s = ServiciosModel.porId(id);
+  if (!s) return;
+  refrescarSelectsSedes();
+  document.getElementById('svcId').value = s.id;
+  document.getElementById('svcCliente').value = s.cliente;
+  document.getElementById('svcSede').value = s.sedeId;
+  document.getElementById('svcTipo').value = s.tipo;
+  document.getElementById('svcFecha').value = s.fecha;
+  document.getElementById('svcHora').value = s.hora || '';
+  document.getElementById('svcUnidades').value = s.unidades;
+  document.getElementById('svcMonto').value = s.monto;
+  document.getElementById('svcEstado').value = s.estado;
+  document.getElementById('svcNotas').value = s.notas || '';
+  document.getElementById('subProgramar').textContent = 'Editando el servicio ' + s.codigo + '.';
+  document.getElementById('btnGuardarServicio').textContent = 'Actualizar servicio';
+  document.getElementById('msgProgramar').style.display = 'none';
+  cambiarVista('programar');
+}
+
+function cancelarProgramar(){
+  prepararFormularioNuevo();
+  cambiarVista('servicios');
+}
+
+function guardarServicio(evento){
+  evento.preventDefault();
+  const id = document.getElementById('svcId').value;
+  const cliente = document.getElementById('svcCliente').value.trim();
+  const sedeId = document.getElementById('svcSede').value;
+  const tipo = document.getElementById('svcTipo').value;
+  const fecha = document.getElementById('svcFecha').value;
+  const hora = document.getElementById('svcHora').value;
+  const unidades = document.getElementById('svcUnidades').value;
+  const monto = document.getElementById('svcMonto').value;
+  const estado = document.getElementById('svcEstado').value;
+  const notas = document.getElementById('svcNotas').value.trim();
+
+  if (!cliente){ mostrarMensaje('msgProgramar', 'Ingresa el nombre del cliente.', 'error'); return false; }
+  if (!sedeId){ mostrarMensaje('msgProgramar', 'Registra al menos una sede antes de programar servicios.', 'error'); return false; }
+  if (!fecha){ mostrarMensaje('msgProgramar', 'Selecciona la fecha programada del servicio.', 'error'); return false; }
+  if (monto === '' || Number(monto) < 0){ mostrarMensaje('msgProgramar', 'Ingresa un monto válido.', 'error'); return false; }
+
+  const datos = { cliente, sedeId, tipo, fecha, hora, unidades: Number(unidades)||0, monto: Number(monto)||0, estado, notas };
+
+  if (id){
+    ServiciosModel.actualizar(id, datos);
+    mostrarMensaje('msgProgramar', 'Servicio actualizado correctamente.', 'ok');
+  } else {
+    ServiciosModel.crear(datos);
+    mostrarMensaje('msgProgramar', 'Servicio programado correctamente.', 'ok');
+  }
+
+  setTimeout(() => { prepararFormularioNuevo(); cambiarVista('servicios'); }, 700);
+  return false;
+}
+
+/* =====================================================
+   VISTA: SEDES
+   ===================================================== */
+function renderSedes(){
+  const sedes = SedesModel.obtener();
+  document.getElementById('listaSedes').innerHTML = sedes.length ? sedes.map(s => {
+    const cantidad = ServiciosModel.obtener().filter(sv => sv.sedeId === s.id).length;
+    return '<div class="tarjeta-sede">' +
+      '<div class="sede-nombre">'+s.nombre+'</div>' +
+      '<div class="sede-dato">'+s.ciudad+'</div>' +
+      '<div class="sede-dato">'+(s.direccion || 'Sin dirección registrada')+'</div>' +
+      '<div class="sede-dato">'+cantidad+' servicio(s) registrados</div>' +
+      '<div class="sede-acciones"><button class="btn-sm peligro" onclick="eliminarSede(\''+s.id+'\')">Eliminar sede</button></div>' +
+    '</div>';
+  }).join('') : '<p class="celda-vacia">Aún no has registrado sedes.</p>';
+}
+
+function guardarSede(evento){
+  evento.preventDefault();
+  const nombre = document.getElementById('sedeNombre').value.trim();
+  const ciudad = document.getElementById('sedeCiudad').value.trim();
+  const direccion = document.getElementById('sedeDireccion').value.trim();
+
+  if (!nombre){ mostrarMensaje('msgSede', 'Ingresa el nombre de la sede.', 'error'); return false; }
+  if (!ciudad){ mostrarMensaje('msgSede', 'Ingresa la ciudad de la sede.', 'error'); return false; }
+
+  SedesModel.crear(nombre, ciudad, direccion);
+  mostrarMensaje('msgSede', 'Sede agregada correctamente.', 'ok');
+  document.getElementById('formSede').reset();
+  refrescarSelectsSedes();
+  renderSedes();
+  return false;
+}
+
+function eliminarSede(id){
+  const enUso = ServiciosModel.obtener().some(s => s.sedeId === id);
+  if (enUso && !confirm('Esta sede tiene servicios registrados. ¿Eliminarla de todas formas?')) return;
+  SedesModel.eliminar(id);
+  refrescarSelectsSedes();
+  renderSedes();
+}
+
+/* =====================================================
+   VISTA: REPORTES (por mes y año)
+   ===================================================== */
+function renderReportes(){
+  const anio = document.getElementById('repAnio').value || String(new Date().getFullYear());
+  const mes = document.getElementById('repMes').value;
+  document.getElementById('repAnio').value = anio;
+
+  const todos = ServiciosModel.obtener();
+  const delAnio = todos.filter(s => s.fecha.slice(0,4) === anio);
+  const periodo = mes ? delAnio.filter(s => s.fecha.slice(5,7) === mes) : delAnio;
+
+  // ---- cards resumen del periodo ----
+  const total = periodo.length;
+  const montoTotal = periodo.reduce((acc, s) => acc + Number(s.monto||0), 0);
+  const ticketProm = total ? montoTotal / total : 0;
+  const completadosOFacturados = periodo.filter(s => s.estado === 'Completado' || s.estado === 'Facturado').length;
+  const tasaCompletado = total ? Math.round((completadosOFacturados/total)*100) : 0;
+
+  const cards = [
+    { label:'Servicios en el periodo', valor: total },
+    { label:'Monto total', valor: formatMoneda(montoTotal) },
+    { label:'Ticket promedio', valor: formatMoneda(ticketProm) },
+    { label:'Tasa de completado', valor: tasaCompletado + '%', nota:'Completados o facturados' }
+  ];
+  document.getElementById('cardsReporte').innerHTML = cards.map(c =>
+    '<div class="card"><div class="card-label">'+c.label+'</div><div class="card-valor">'+c.valor+'</div>'+(c.nota?'<div class="card-nota">'+c.nota+'</div>':'')+'</div>'
+  ).join('');
+
+  // ---- gráfico mensual (siempre el año completo) ----
+  const montosPorMes = new Array(12).fill(0);
+  delAnio.forEach(s => { montosPorMes[Number(s.fecha.slice(5,7))-1] += Number(s.monto||0); });
+  const maxMonto = Math.max(...montosPorMes, 1);
+  const mesSeleccionado = mes ? Number(mes)-1 : -1;
+  document.getElementById('tituloChart').textContent = 'Monto programado por mes — ' + anio;
+
+  document.getElementById('chartMensual').innerHTML = montosPorMes.map((m, i) => {
+    const alturaPx = Math.max(3, Math.round((m/maxMonto)*130));
+    return '<div class="barra-wrap">' +
+      '<div class="valor-label">'+(m>0 ? 'S/ '+Math.round(m) : '')+'</div>' +
+      '<div class="barra'+(i===mesSeleccionado?' actual':'')+'" style="height:'+alturaPx+'px"></div>' +
+      '<div class="mes-label">'+MESES[i]+'</div>' +
+    '</div>';
+  }).join('');
+
+  // ---- desglose por estado ----
+  const maxEstadoMonto = Math.max(...ESTADOS.map(e => periodo.filter(s=>s.estado===e).reduce((a,s)=>a+Number(s.monto||0),0)), 1);
+  document.getElementById('desgloseEstado').innerHTML = ESTADOS.map(e => {
+    const items = periodo.filter(s => s.estado === e);
+    const montoE = items.reduce((a,s)=>a+Number(s.monto||0),0);
+    const pct = Math.round((montoE/maxEstadoMonto)*100);
+    return '<div class="desglose-fila">' +
+      '<div class="desglose-etq">'+e+'</div>' +
+      '<div class="desglose-barra"><div style="width:'+pct+'%"></div></div>' +
+      '<div class="desglose-val">'+items.length+' · '+formatMoneda(montoE)+'</div>' +
+    '</div>';
+  }).join('');
+
+  // ---- desglose por sede ----
+  const sedes = SedesModel.obtener();
+  const maxSedeMonto = Math.max(...sedes.map(sd => periodo.filter(s=>s.sedeId===sd.id).reduce((a,s)=>a+Number(s.monto||0),0)), 1);
+  document.getElementById('desgloseSede').innerHTML = sedes.length ? sedes.map(sd => {
+    const items = periodo.filter(s => s.sedeId === sd.id);
+    const montoS = items.reduce((a,s)=>a+Number(s.monto||0),0);
+    const pct = Math.round((montoS/maxSedeMonto)*100);
+    return '<div class="desglose-fila">' +
+      '<div class="desglose-etq">'+sd.nombre+'</div>' +
+      '<div class="desglose-barra"><div style="width:'+pct+'%"></div></div>' +
+      '<div class="desglose-val">'+items.length+' · '+formatMoneda(montoS)+'</div>' +
+    '</div>';
+  }).join('') : '<p class="celda-vacia">No hay sedes registradas.</p>';
+
+  // ---- tabla detalle ----
+  const detalle = periodo.slice().sort((a,b) => b.fecha.localeCompare(a.fecha));
+  document.getElementById('tablaReporteDetalle').innerHTML = detalle.length ? detalle.map(s =>
+    '<tr><td>'+s.codigo+'</td><td>'+s.cliente+'</td><td>'+nombreSede(s.sedeId)+'</td><td>'+formatFecha(s.fecha)+'</td><td>'+formatMoneda(s.monto)+'</td><td>'+badgeEstado(s.estado)+'</td></tr>'
+  ).join('') : '<tr><td colspan="6" class="celda-vacia">No hay servicios registrados en este periodo.</td></tr>';
+}
+</script>
+
+</body>
+</html>
